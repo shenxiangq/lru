@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # encoding=utf-8
+from collections import OrderedDict
 
 class LRUCache(object):
     '''
     This is based on the idea of LinkedHashMap.
     This class implements a doubly linked list.
-    The list is ordered by the access order, ie the least recently used item is 
+    The list is ordered by the access order, ie the least recently used item is
     in the last node, the first node is the to_remove node.
     '''
     class LinkedNode(object):
+        __slots__ = ['key', 'value', 'prev', 'next']
+
         def __init__(self, key, value, prev, next):
             self.key = key
             self.value = value
@@ -60,4 +63,28 @@ class LRUCache(object):
         node.next = self._tail_node
         self._tail_node.prev = node
 
+class LRUCacheOrdered(object):
+    '''不能存储可变类型对象，不能并发访问set()'''
+
+    def __init__(self, capacity):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+
+    def get(self,key):
+        if self.cache.has_key(key):
+            value = self.cache.pop(key)
+            self.cache[key] = value
+        else:
+            value = None
+
+        return value
+
+    def set(self,key,value):
+        if self.cache.has_key(key):
+            value = self.cache.pop(key)
+            self.cache[key] = value
+        else:
+            if len(self.cache) == self.capacity:
+                self.cache.popitem(last = False)    #pop出第一个item
+            self.cache[key] = value
 
